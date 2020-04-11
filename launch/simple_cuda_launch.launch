@@ -1,0 +1,3 @@
+<launch>
+    <node name="simple_cuda" pkg="cuda_test" type="simple_cuda_node" output="screen"/>
+</launch>

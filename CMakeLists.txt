@@ -1,0 +1,59 @@
+cmake_minimum_required(VERSION 2.8.3)
+project(cuda_test)
+
+set(CUDA_TOOLKIT_ROOT_DIR /usr/local/cuda-8.0)
+set(PCL_DIR /opt/pcl_1_8_1/share/pcl-1.8)
+set(CMAKE_CUDA_COMPILER /usr/local/cuda-8.0/bin/nvcc)
+
+add_compile_options(-std=c++14)
+set(CMAKE_CXX_STANDARD 14)
+
+set(LIB_TYPE STATIC)
+
+find_package(catkin REQUIRED COMPONENTS
+  roscpp
+  std_msgs
+  pcl_ros
+  pcl_conversions
+  sensor_msgs
+  pyrosmsg
+)
+
+find_package(CUDA 8.0 REQUIRED)
+find_package(PCL 1.8.1 REQUIRED)
+
+include(FindCUDA)
+
+message(STATUS ${PCL_LIBRARIES})
+
+catkin_package(
+#  INCLUDE_DIRS include 
+#  LIBRARIES cuda_test
+#  CATKIN_DEPENDS roscpp std_msgs
+#  DEPENDS system_lib
+)
+
+include_directories(
+  include
+  ${catkin_INCLUDE_DIRS}
+  ${PCL_INCLUDE_DIRS}
+  ${CUDA_INCLUDE_DIRS}
+)
+
+link_directories(
+  ${PCL_LIBRARY_DIRS}
+)
+
+#add_definitions(
+#  ${PCL_DEFINITIONS}
+#)
+
+cuda_add_executable(pcl_cuda_node src/cuda_pcl.cpp)
+
+target_link_libraries(pcl_cuda_node
+  ${catkin_LIBRARIES}
+  pcl_cuda_features
+  pcl_cuda_io
+  pcl_common
+  pcl_filters
+)
