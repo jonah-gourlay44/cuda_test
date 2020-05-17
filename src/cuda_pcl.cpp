@@ -1,64 +1,47 @@
-#include <ros/ros.h>
-#include <pcl/cuda/io/host_device.h>
-#include <pcl/cuda/features/normal_3d.h>
-#include <pcl/cuda/time_cpu.h>
-#include <pcl/cuda/time_gpu.h>
-#include <pcl/cuda/io/cloud_to_pcl.h>
-#include <pcl/cuda/io/extract_indices.h>
-#include <pcl/cuda/io/disparity_to_cloud.h>
-#include <pcl/cuda/io/host_device.h>
-#include <pcl/io/openni_grabber.h>
-#include <pcl/io/pcd_grabber.h>
-#include <pcl/visualization/cloud_viewer.h>
-#include <pcl/point_cloud.h>
-#include <pcl/point_types.h>
-#include <pcl/pcl_macros.h>
-
-#include <sensor_msgs/PointCloud2.h>
-#include <pcl_conversions/pcl_conversions.h>
-
-#include <boost/smart_ptr/shared_ptr.hpp>
-
-#include <functional>
-#include <iostream>
-#include <mutex>
-
+#include <cuda_test/pcl_cuda_include.h>
 
 using namespace pcl::cuda;
 
 template <typename T>
 using shared_ptr = boost::shared_ptr<T>;
 
+template <template <typename> class Storage>
 class TestPCL
 {
 public:
     TestPCL( void ) 
     {   
         cloud_sub_ = nh_.subscribe( "cloud_in", 1,
-				&TestPCL::cloudCallback<Device>,
+				&TestPCL::cloudCallback,
 				this );
+
+        voxel_filter_.setLeafSize( 0.1, 0.1, 0.1 );
     }
 
-    
-    template <template <typename> class Storage> void
+    void
     cloudCallback( const sensor_msgs::PointCloud2ConstPtr cloud )
     {   
-       
-        ROS_INFO("cloud callback");
+        ScopeTimeCPU time_total ("Callback");
+        ROS_INFO("\ncloud callback");
+        ros::Time start = ros::Time::now();
 
         pcl::PointCloud<pcl::PointXYZ> pcl_cloud;
         
         pcl::fromROSMsg( *cloud, pcl_cloud );
 
+        pcl::PointCloud<pcl::PointXYZ> pcl_cloud_voxel;
+        voxel_filter_.setInputCloud( pcl_cloud.makeShared() );
+        voxel_filter_.filter( pcl_cloud_voxel );
+
         PointCloudAOS<Host> data_host;
-        data_host.points.resize (pcl_cloud.points.size());
-        for (std::size_t i = 0; i < pcl_cloud.points.size (); ++i)
+        data_host.points.resize (pcl_cloud_voxel.points.size());
+        for (std::size_t i = 0; i < pcl_cloud_voxel.points.size (); ++i)
         {
             PointXYZRGB pt;
-            pt.x = pcl_cloud.points[i].x;
-            pt.y = pcl_cloud.points[i].y;
-            pt.z = pcl_cloud.points[i].z;
-    
+            pt.x = pcl_cloud_voxel.points[i].x;
+            pt.y = pcl_cloud_voxel.points[i].y;
+            pt.z = pcl_cloud_voxel.points[i].z;
+            
             data_host.points[i] = pt;
         }
         data_host.width = pcl_cloud.width;
@@ -68,9 +51,33 @@ public:
 
         shared_ptr<typename Storage<float4>::type> normals;
         {
-            ScopeTimeCPU time ("Normal Estimation");
-            float focallength = 580/2.0;
-            normals = computePointNormals<Storage, typename PointIterator<Storage,PointXYZRGB>::type > (data->points.begin (), data->points.end (), focallength, data, 0.05, 30);
+            ScopeTimeCPU time_normals ("Normal Estimation");
+            normals = computeFastPointNormals<Storage> (data);
+        }
+
+        typename SampleConsensusModel1PointPlane<Storage>::Ptr model;
+
+        model.reset(new SampleConsensusModel1PointPlane<Storage> (data));
+        model->setNormals (normals);
+
+        MultiRandomSampleConsensus<Storage> sac (model, 2000.0);
+        sac.setMinimumCoverage (0.9);
+        sac.setMaximumBatches (5);
+        sac.setIterationsPerBatch (1000);
+
+        {
+            ScopeTimeCPU time_compute ("Plane Computation");
+            sac.computeModel (0);
+            std::vector<typename SampleConsensusModel1PointPlane<Storage>::IndicesPtr> planes;
+            typename Storage<int>::type region_mask;
+            markInliers<Storage> (data, region_mask, planes);
+            thrust::host_vector<int> regions_host;
+            std::copy (regions_host.begin (), regions_host.end (), std::ostream_iterator<int>(std::cerr, " "));
+            planes = sac.getAllInliers ();
+            std::vector<int> planes_inlier_counts = sac.getAllInlierCounts ();
+            std::vector<float4> coeffs = sac.getAllModelCoefficients ();
+            std::vector<float3> centroids = sac.getAllModelCentroids ();
+            ROS_INFO_STREAM("\nFound " << planes.size () << " planes");
         }
         
         std::lock_guard<std::mutex> l(m_mutex);
@@ -82,10 +89,11 @@ private:
     ros::NodeHandle nh_;
     ros::Subscriber cloud_sub_;
     std::mutex m_mutex;
-    pcl::PointCloud<pcl::PointXYZRGBNormal>::Ptr normal_cloud;
-    DisparityToCloud d2c;
-};
 
+    pcl::PointCloud<pcl::PointXYZRGBNormal>::Ptr normal_cloud;
+    pcl::VoxelGrid<pcl::PointXYZ> voxel_filter_;
+
+};
 
 int main(int argc, char **argv)
 {
@@ -93,7 +101,7 @@ int main(int argc, char **argv)
     ros::init(argc, argv, "simple_cuda_node");
     ros::NodeHandle n("~");
 
-    TestPCL test;
+    TestPCL<Device> test;
 
     ros::Rate loop_rate(1);
     while(n.ok())

@@ -3,12 +3,11 @@ project(cuda_test)
 
 set(CUDA_TOOLKIT_ROOT_DIR /usr/local/cuda-8.0)
 set(PCL_DIR /opt/pcl_1_8_1/share/pcl-1.8)
+set(PCL_ROOT /opt/pcl_1_8_1)
 set(CMAKE_CUDA_COMPILER /usr/local/cuda-8.0/bin/nvcc)
 
 add_compile_options(-std=c++14)
 set(CMAKE_CXX_STANDARD 14)
-
-set(LIB_TYPE STATIC)
 
 find_package(catkin REQUIRED COMPONENTS
   roscpp
@@ -24,8 +23,6 @@ find_package(PCL 1.8.1 REQUIRED)
 
 include(FindCUDA)
 
-message(STATUS ${PCL_LIBRARIES})
-
 catkin_package(
 #  INCLUDE_DIRS include 
 #  LIBRARIES cuda_test
@@ -40,20 +37,23 @@ include_directories(
   ${CUDA_INCLUDE_DIRS}
 )
 
-link_directories(
+link_directories( 
   ${PCL_LIBRARY_DIRS}
 )
 
-#add_definitions(
-#  ${PCL_DEFINITIONS}
-#)
+add_definitions(
+  ${PCL_DEFINITIONS}
+)
 
 cuda_add_executable(pcl_cuda_node src/cuda_pcl.cpp)
+cuda_add_executable(voxel_grid_cuda_node src/voxel_grid_cuda.cpp)
 
 target_link_libraries(pcl_cuda_node
   ${catkin_LIBRARIES}
-  pcl_cuda_features
-  pcl_cuda_io
-  pcl_common
-  pcl_filters
+  ${PCL_LIBRARIES}
+)
+
+target_link_libraries(voxel_grid_cuda_node 
+  ${catkin_LIBRARIES}
+  ${PCL_LIBRARIES}
 )

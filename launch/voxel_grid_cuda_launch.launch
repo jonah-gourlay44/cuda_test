@@ -1,0 +1,13 @@
+<launch>
+    <param name="use_sim_time" value="true" />
+    <node pkg="rosbag" type="play" name="player" output="screen" args="--loop --rate=1.0 --clock --quiet /home/jonah/bagfiles/bridgecar_testing_2019-06-03-14-14-41.bag" />
+
+    <node name="combine_clouds_filter_srv" pkg="lidar_tools" type="combine_clouds_filter_srv.py" output="screen" respawn="true" >
+        <remap from="/middle0_left_lidar/cloud" to="/rear_left_lidar/cloud"/>
+        <remap from="/middle0_right_lidar/cloud" to="/rear_right_lidar/cloud"/>
+    </node>
+
+    <node name="voxel_grid_cuda" pkg="cuda_test" type="voxel_grid_cuda_node" output="screen">
+        <remap from="cloud_in" to="reconstructed_cloud"/>
+    </node>
+</launch>
