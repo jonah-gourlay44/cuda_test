@@ -12,13 +12,16 @@ template <template <typename> class Storage>
 class VoxelGridCuda
 {
 public:
-    VoxelGridCuda( void ) 
+    VoxelGridCuda( void ) :
+        nh_private_("~")
     {   
         cloud_sub_ = nh_.subscribe( "cloud_in", 1,
 				&VoxelGridCuda::cloudCallback,
 				this );
 
-        voxel_filter_.setLeafSize ( 0.1, 0.1, 0.1 );
+        pub_voxel_filt_ = nh_private_.advertise<sensor_msgs::PointCloud2>( "voxel_grid_filter", 1 );
+
+        voxel_filter_.setLeafSize ( 0.5, 0.5, 0.5 );
     }
 
     void
@@ -51,19 +54,30 @@ public:
         PointCloudAOS<Host> filter_host;
         typename PointCloudAOS<Storage>::Ptr filter_cloud = toStorage<Host, Storage> (filter_host);
         voxel_filter_.setInputCloud ( data );
-        voxel_filter_.filter ( filter_cloud ); 
+
+        {
+            ScopeTimeCPU filter_time ("filtering");
+            voxel_filter_.filter ( filter_cloud ); 
+        }
         
         std::lock_guard<std::mutex> l(m_mutex);
-        //normal_cloud.reset (new pcl::PointCloud<pcl::PointXYZRGBNormal>);
-        //toPCL (*data, *normals, *normal_cloud);
+        out_cloud.reset (new pcl::PointCloud<pcl::PointXYZRGB>);
+        toPCL (*filter_cloud, *out_cloud);
+
+        sensor_msgs::PointCloud2 ros_cloud;
+        pcl::toROSMsg( *out_cloud, ros_cloud );
+        ros_cloud.header.frame_id = cloud->header.frame_id;
+        pub_voxel_filt_.publish( ros_cloud );
     }
 
 private:
     ros::NodeHandle nh_;
+    ros::NodeHandle nh_private_;
     ros::Subscriber cloud_sub_;
+    ros::Publisher pub_voxel_filt_;
     std::mutex m_mutex;
 
-    pcl::PointCloud<pcl::PointXYZRGBNormal>::Ptr normal_cloud;
+    pcl::PointCloud<pcl::PointXYZRGB>::Ptr out_cloud;
     VoxelGrid<Storage> voxel_filter_;
 
 };
