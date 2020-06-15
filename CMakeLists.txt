@@ -56,14 +56,8 @@ add_definitions(
   ${PCL_DEFINITIONS}
 )
 
-cuda_add_executable(pcl_cuda_node src/cuda_pcl.cpp)
 cuda_add_executable(voxel_grid_cuda_node src/voxel_grid_cuda.cpp)
 add_executable(voxel_grid_node src/voxel_grid.cpp)
-
-target_link_libraries(pcl_cuda_node
-  ${catkin_LIBRARIES}
-  ${PCL_LIBRARIES}
-)
 
 target_link_libraries(voxel_grid_cuda_node 
   ${catkin_LIBRARIES}
