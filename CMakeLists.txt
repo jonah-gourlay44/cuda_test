@@ -20,7 +20,9 @@ find_package(catkin REQUIRED COMPONENTS
 )
 
 find_package(CUDA 8.0 REQUIRED)
-find_package(PCL 1.8.1 REQUIRED)
+find_package(PCL 1.8.1 REQUIRED COMPONENTS
+  cuda_filters
+)
 
 include(FindCUDA)
 
