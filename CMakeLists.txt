@@ -23,7 +23,13 @@ find_package(CUDA 8.0 REQUIRED)
 find_package(PCL 1.8.1 REQUIRED COMPONENTS
   cuda_filters
   cuda_io
+  cuda_segmentations
+  cuda_features
+  cuda_sample_consensus
   cuda_common
+  filters
+  io
+  common
 )
 
 include(FindCUDA)
