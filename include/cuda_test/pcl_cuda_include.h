@@ -14,7 +14,7 @@
 #include <pcl/pcl_macros.h>
 #include <pcl/cuda/sample_consensus/multi_ransac.h>
 #include <pcl/cuda/sample_consensus/sac_model_1point_plane.h>
-#include <pcl/cuda/filters/voxel_grid.h>
+#include <pcl/filters/voxel_grid.h>
 //#include <pcl/cuda/sample_consensus/sac_model_plane.h>
 #include <pcl/cuda/io/extract_indices.h>
 #include <pcl/cuda/segmentation/connected_components.h>
