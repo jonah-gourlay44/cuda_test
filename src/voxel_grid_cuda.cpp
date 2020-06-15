@@ -16,7 +16,7 @@ public:
         nh_private_("~")
     {   
         cloud_sub_ = nh_.subscribe( "cloud_in", 1,
-				&VoxelGridCuda::cloudCallback,
+				&VoxelGridCuda<Storage>::cloudCallback,
 				this );
 
         pub_voxel_filt_ = nh_private_.advertise<sensor_msgs::PointCloud2>( "voxel_grid_filter", 1 );
