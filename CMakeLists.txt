@@ -30,6 +30,12 @@ find_package(PCL 1.8.1 REQUIRED COMPONENTS
   filters
   io
   common
+  sample_consensus
+  search
+  segmentation
+  features
+  registration
+  surface
 )
 
 include(FindCUDA)
