@@ -8,7 +8,7 @@ set(CMAKE_CUDA_COMPILER /usr/local/cuda-8.0/bin/nvcc)
 
 add_compile_options(-std=c++14)
 set(CMAKE_CXX_STANDARD 14)
-set(CMAKE_CXX_FLAGS "-O2")
+#set(CMAKE_CXX_FLAGS "-O2")
 
 find_package(catkin REQUIRED COMPONENTS
   roscpp
