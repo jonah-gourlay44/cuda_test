@@ -60,8 +60,8 @@ public:
             voxel_filter_.filter ( filter_cloud ); 
         }
         
-        std::lock_guard<std::mutex> l(m_mutex);
-	std::cout << "lock guard" << std::endl;
+        //std::lock_guard<std::mutex> l(m_mutex);
+	//std::cout << "lock guard" << std::endl;
         /*out_cloud.reset (new pcl::PointCloud<pcl::PointXYZRGB>);
 	std::cout << "cloud reset" << std::endl;
         toPCL (*filter_cloud, *out_cloud);
