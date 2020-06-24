@@ -64,10 +64,10 @@ public:
 	std::cout << "lock guard" << std::endl;
         out_cloud.reset (new pcl::PointCloud<pcl::PointXYZRGB>);
 	std::cout << "cloud reset" << std::endl;
-        /*toPCL (*filter_cloud, *out_cloud);
+        toPCL (*filter_cloud, *out_cloud);
 	std::cout << "to PCL" << std::endl;
 
-        sensor_msgs::PointCloud2 ros_cloud;
+        /*sensor_msgs::PointCloud2 ros_cloud;
         pcl::toROSMsg( *out_cloud, ros_cloud );
 	std::cout << "to ROS" << std:: endl;
         ros_cloud.header.frame_id = cloud->header.frame_id;
