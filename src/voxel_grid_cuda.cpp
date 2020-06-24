@@ -62,7 +62,7 @@ public:
         
         std::lock_guard<std::mutex> l(m_mutex);
 	std::cout << "lock guard" << std::endl;
-        out_cloud.reset (new pcl::PointCloud<pcl::PointXYZRGB>);
+        /*out_cloud.reset (new pcl::PointCloud<pcl::PointXYZRGB>);
 	std::cout << "cloud reset" << std::endl;
         toPCL (*filter_cloud, *out_cloud);
 	std::cout << "to PCL" << std::endl;
@@ -72,7 +72,7 @@ public:
 	std::cout << "to ROS" << std:: endl;
         ros_cloud.header.frame_id = cloud->header.frame_id;
         pub_voxel_filt_.publish( ros_cloud );
-	std::cout << "publish" << std::endl;
+	std::cout << "publish" << std::endl;*/
     }
 
 private:
