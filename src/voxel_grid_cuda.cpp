@@ -66,8 +66,7 @@ public:
 	    
 	typename PointCloudAOS<Host>::Ptr data_out = toStorage<Storage, Host> (*filter_cloud);
 	    
-	/*std::cout << "cloud reset" << std::endl;
-        toPCL (*filter_cloud, *out_cloud);
+        toPCL (*data_out, *out_cloud);
 	std::cout << "to PCL" << std::endl;
 
         /*sensor_msgs::PointCloud2 ros_cloud;
