@@ -10,4 +10,6 @@
     <node name="voxel_grid_cuda" pkg="cuda_test" type="voxel_grid_cuda_node" output="screen">
         <remap from="cloud_in" to="reconstructed_cloud"/>
     </node>
+    
+    <node name="rviz_bridgecar_viz" pkg="rviz" type="rviz" respawn="true" output="screen" />
 </launch>
