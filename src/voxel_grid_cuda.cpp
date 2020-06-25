@@ -14,7 +14,7 @@ class VoxelGridCuda
 public:
     VoxelGridCuda( void )
 	: nh_private_("~")
-	, out_cloud(new pcl::PointCloud<pcl::PointXYZRGB>) 
+	, out_cloud(new pcl::PointCloud<pcl::PointXYZ>) 
     {   
         cloud_sub_ = nh_.subscribe( "cloud_in", 1,
 				&VoxelGridCuda<Storage>::cloudCallback,
@@ -63,15 +63,19 @@ public:
         
         std::lock_guard<std::mutex> l(m_mutex);
 	std::cout << "lock guard" << std::endl;
-        out_cloud.reset (new pcl::PointCloud<pcl::PointXYZRGB>);
+        out_cloud.reset (new pcl::PointCloud<pcl::PointXYZ>);
 	    
 	typename PointCloudAOS<Host>::Ptr data_out = toStorage<Storage, Host> (*filter_cloud);
 	
 	std::cout << data_out->points.size() << std::endl;
 	    
-	//out_cloud->points.resize(data_out->points.size());
-        toPCL (*data_out, *out_cloud);
-	std::cout << "to PCL" << std::endl;
+	out_cloud->points.resize (data_out->points.size ());
+  	for (size_t i = 0; i < data_out->points.size (); ++i)
+  	{
+    	    out_cloud->points[i].x = data_out->points[i].x;
+    	    out_cloud->points[i].y = data_out->points[i].y;
+    	    out_cloud->points[i].z = data_out->points[i].z;
+  	}	
 
         /*sensor_msgs::PointCloud2 ros_cloud;
         pcl::toROSMsg( *out_cloud, ros_cloud );
@@ -88,7 +92,7 @@ private:
     ros::Publisher pub_voxel_filt_;
     std::mutex m_mutex;
 
-    pcl::PointCloud<pcl::PointXYZRGB>::Ptr out_cloud;
+    pcl::PointCloud<pcl::PointXYZ>::Ptr out_cloud;
     VoxelGrid<Storage> voxel_filter_;
 
 };
