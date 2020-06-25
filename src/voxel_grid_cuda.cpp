@@ -62,7 +62,6 @@ public:
         }
         
         std::lock_guard<std::mutex> l(m_mutex);
-	std::cout << "lock guard" << std::endl;
         out_cloud.reset (new pcl::PointCloud<pcl::PointXYZ>);
 	    
 	typename PointCloudAOS<Host>::Ptr data_out = toStorage<Storage, Host> (*filter_cloud);
@@ -77,12 +76,10 @@ public:
     	    out_cloud->points[i].z = data_out->points[i].z;
   	}	
 
-        /*sensor_msgs::PointCloud2 ros_cloud;
+        sensor_msgs::PointCloud2 ros_cloud;
         pcl::toROSMsg( *out_cloud, ros_cloud );
-	std::cout << "to ROS" << std:: endl;
         ros_cloud.header.frame_id = cloud->header.frame_id;
         pub_voxel_filt_.publish( ros_cloud );
-	std::cout << "publish" << std::endl;*/
     }
 
 private:
