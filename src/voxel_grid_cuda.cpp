@@ -69,7 +69,7 @@ public:
 	
 	std::cout << data_out->points.size() << std::endl;
 	    
-	out_cloud->points.resize(2);
+	out_cloud->points.resize(data_out->points.size());
         //toPCL (*data_out, *out_cloud);
 	//std::cout << "to PCL" << std::endl;
 
