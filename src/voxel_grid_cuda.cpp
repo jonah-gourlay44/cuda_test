@@ -12,8 +12,9 @@ template <template <typename> class Storage>
 class VoxelGridCuda
 {
 public:
-    VoxelGridCuda( void ) :
-        nh_private_("~")
+    VoxelGridCuda( void )
+	: nh_private_("~")
+	, out_cloud(new pcl::PointCloud<pcl::PointXYZRGB>) 
     {   
         cloud_sub_ = nh_.subscribe( "cloud_in", 1,
 				&VoxelGridCuda<Storage>::cloudCallback,
@@ -67,6 +68,8 @@ public:
 	typename PointCloudAOS<Host>::Ptr data_out = toStorage<Storage, Host> (*filter_cloud);
 	
 	std::cout << data_out->points.size() << std::endl;
+	    
+	out_cloud->points.resize(2);
         //toPCL (*data_out, *out_cloud);
 	//std::cout << "to PCL" << std::endl;
 
