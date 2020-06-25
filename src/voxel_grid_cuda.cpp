@@ -63,7 +63,10 @@ public:
         std::lock_guard<std::mutex> l(m_mutex);
 	std::cout << "lock guard" << std::endl;
         out_cloud.reset (new pcl::PointCloud<pcl::PointXYZRGB>);
-	std::cout << "cloud reset" << std::endl;
+	    
+	data_host = toStorage<Storage, Host> (*filter_cloud);
+	    
+	/*std::cout << "cloud reset" << std::endl;
         toPCL (*filter_cloud, *out_cloud);
 	std::cout << "to PCL" << std::endl;
 
