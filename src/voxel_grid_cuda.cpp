@@ -66,7 +66,7 @@ public:
 	    
 	typename PointCloudAOS<Host>::Ptr data_out = toStorage<Storage, Host> (*filter_cloud);
 	
-	out_cloud->points.resize(data_out->points.size());
+	std::cout << data_out->points.size() << std::endl;
         //toPCL (*data_out, *out_cloud);
 	//std::cout << "to PCL" << std::endl;
 
